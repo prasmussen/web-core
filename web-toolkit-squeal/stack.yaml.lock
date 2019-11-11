@@ -3,7 +3,30 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    subdir: squeal-postgresql
+    cabal-file:
+      size: 3470
+      sha256: 3d9bcfa1084cf54de1fe44a61219bc8ca21692c77f483cbc6a37eb260c95c22f
+    name: squeal-postgresql
+    version: 0.5.1.0
+    git: https://github.com/morphismtech/squeal.git
+    pantry-tree:
+      size: 3013
+      sha256: 5ffb1f8ba5daceb7cc940537287b741e9bb9c8791422b305aeb761edf85e9199
+    commit: 83c711a74d96feb0d9e47c60727403ca3faac035
+  original:
+    subdir: squeal-postgresql
+    git: https://github.com/morphismtech/squeal.git
+    commit: 83c711a74d96feb0d9e47c60727403ca3faac035
+- completed:
+    hackage: unliftio-pool-0.2.1.0@sha256:4de658feb1b10051c5af024c20cd7baa369c777716c54a7b3e2888a73286aecf,922
+    pantry-tree:
+      size: 217
+      sha256: ddec03547e1feda7e861b49b2d1f2e188d41dc7bd04ae3d831f57d0813eb09a5
+  original:
+    hackage: unliftio-pool-0.2.1.0
 snapshots:
 - completed:
     size: 500539

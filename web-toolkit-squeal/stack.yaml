@@ -41,6 +41,11 @@ packages:
 #
 extra-deps:
 - ../web-toolkit-base
+- git: https://github.com/morphismtech/squeal.git
+  commit: 83c711a74d96feb0d9e47c60727403ca3faac035
+  subdirs:
+    - squeal-postgresql
+- unliftio-pool-0.2.1.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
