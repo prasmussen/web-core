@@ -27,6 +27,16 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -Weverything
+  - -Wno-missed-specialisations
+  - -Wno-all-missed-specialisations
+  - -Wno-unsafe
+  - -Wno-safe
+  - -Wno-missing-local-signatures
+  - -Wno-monomorphism-restriction
+  - -Wno-missing-import-lists
+  - -Wno-implicit-prelude
 
 tests:
   web-toolkit-test:

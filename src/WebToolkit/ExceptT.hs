@@ -23,8 +23,8 @@ fromEither =
 
 
 fromMaybe :: (Monad m) => e -> Maybe a -> Except.ExceptT e m a
-fromMaybe err maybe =
-    Combinators.maybeToRight err maybe
+fromMaybe err maybeValue =
+    Combinators.maybeToRight err maybeValue
         & fromEither
 
 
