@@ -25,6 +25,8 @@ dependencies:
 - transformers
 - either
 - text
+- bytestring
+- binary-parser
 
 library:
   source-dirs: src
