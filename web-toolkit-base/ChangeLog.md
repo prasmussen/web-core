@@ -1,3 +1,3 @@
-# Changelog for web-toolkit
+# Changelog for web-toolkit-base
 
 ## Unreleased changes

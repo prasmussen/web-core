@@ -1,4 +1,4 @@
-name:                web-toolkit
+name:                web-toolkit-base
 version:             0.1.0.0
 github:              "prasmussen/web-toolkit"
 license:             BSD3
@@ -40,7 +40,7 @@ library:
   - -Wno-implicit-prelude
 
 tests:
-  web-toolkit-test:
+  web-toolkit-base-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -48,4 +48,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - web-toolkit
+    - web-toolkit-base
