@@ -24,6 +24,7 @@ dependencies:
 - safe
 - transformers
 - either
+- text
 
 library:
   source-dirs: src
