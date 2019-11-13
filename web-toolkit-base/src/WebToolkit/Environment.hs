@@ -1,6 +1,7 @@
 module WebToolkit.Environment
-    ( Key(..)
+    ( Environment
     , LookupError(..)
+    , Environment.getEnvironment
     , lookup
     ) where
 
@@ -9,33 +10,35 @@ import Data.Function ((&))
 import Prelude hiding (lookup)
 
 import qualified Data.Bifunctor as Bifunctor
+import qualified Prelude
 import qualified Safe
 import qualified System.Environment as Environment
 
 
 data LookupError
-    = KeyNotFound Key
-    | ParseFailed Key String
+    = KeyNotFound String
+    | ParseFailed ParseError
     deriving (Show)
 
 
-newtype Key
-    = Key String
-    deriving (Show)
+data ParseError = ParseError
+    { lookupKey :: String
+    , details :: String
+    } deriving (Show)
 
 
-lookup :: Read a => Key -> IO (Either LookupError a)
-lookup key@(Key keyString) = do
-    maybeValue <- Environment.lookupEnv keyString
-    case maybeValue of
-        Just str ->
-            str
+
+type Environment =
+    [(String, String)]
+
+
+lookup :: Read a => Environment -> String -> Either LookupError a
+lookup environment key =
+    case Prelude.lookup key environment of
+        Just value ->
+            value
                 & Safe.readEitherSafe
-                & Bifunctor.first (ParseFailed key)
-                & pure
+                & Bifunctor.first (ParseFailed . ParseError key)
 
         Nothing ->
-            key
-                & KeyNotFound
-                & Left
-                & pure
+            Left (KeyNotFound key)
