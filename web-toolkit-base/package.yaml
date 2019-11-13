@@ -27,6 +27,8 @@ dependencies:
 - text
 - bytestring
 - binary-parser
+- base64-bytestring
+- clientsession
 
 library:
   source-dirs: src
