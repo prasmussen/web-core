@@ -1,4 +1,4 @@
-module WebToolkit.Read
+module WebCore.Read
     ( read
     , readString
     , readText

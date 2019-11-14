@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module WebToolkit.BinaryParser
+module WebCore.BinaryParser
     ( parser
     , maybeParser
     ) where

@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module WebToolkit.Database
+module WebCore.Database
     ( Config(..)
     , ConnectionPool
     , createPool
@@ -25,7 +25,7 @@ import qualified Squeal.PostgreSQL.Pool as Pool
 import qualified Squeal.PostgreSQL.PQ as PQ
 import qualified Squeal.PostgreSQL.Transaction as Transaction
 import qualified UnliftIO
-import qualified WebToolkit.Read as Read
+import qualified WebCore.Read as Read
 
 
 

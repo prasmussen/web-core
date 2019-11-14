@@ -1,4 +1,4 @@
-module WebToolkit.Crypto
+module WebCore.Crypto
     ( EncryptionKey
     , Ciphertext(..)
     , newKey

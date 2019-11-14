@@ -40,7 +40,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- ../web-toolkit-base
+- ../web-core-base
 - git: https://github.com/morphismtech/squeal.git
   commit: 83c711a74d96feb0d9e47c60727403ca3faac035
   subdirs:

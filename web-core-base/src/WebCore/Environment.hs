@@ -1,4 +1,4 @@
-module WebToolkit.Environment
+module WebCore.Environment
     ( Environment
     , LookupError(..)
     , Environment.getEnvironment

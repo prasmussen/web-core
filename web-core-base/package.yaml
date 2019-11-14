@@ -1,6 +1,6 @@
-name:                web-toolkit-squeal
+name:                web-core-base
 version:             0.1.0.0
-github:              "prasmussen/web-toolkit-squeal"
+github:              "prasmussen/web-core"
 license:             BSD3
 author:              "Petter Rasmussen"
 maintainer:          "petter@hask.no"
@@ -17,22 +17,34 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/prasmussen/web-toolkit-squeal#readme>
+description:         Please see the README on GitHub at <https://github.com/prasmussen/web-core#readme>
 
 dependencies:
 - base >= 4.7 && < 5
-- web-toolkit-base
-- time
+- safe
+- transformers
+- either
 - text
 - bytestring
-- squeal-postgresql
-- unliftio
+- binary-parser
+- base64-bytestring
+- clientsession
 
 library:
   source-dirs: src
+  ghc-options:
+  - -Weverything
+  - -Wno-missed-specialisations
+  - -Wno-all-missed-specialisations
+  - -Wno-unsafe
+  - -Wno-safe
+  - -Wno-missing-local-signatures
+  - -Wno-monomorphism-restriction
+  - -Wno-missing-import-lists
+  - -Wno-implicit-prelude
 
 tests:
-  web-toolkit-squeal-test:
+  web-core-base-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -40,4 +52,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - web-toolkit-squeal
+    - web-core-base
