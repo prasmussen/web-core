@@ -1,6 +1,7 @@
 module WebCore.Environment
     ( Environment
     , LookupError(..)
+    , ParseError(..)
     , Environment.getEnvironment
     , lookup
     ) where
