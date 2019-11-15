@@ -29,6 +29,10 @@ dependencies:
 - binary-parser
 - base64-bytestring
 - clientsession
+- http-api-data
+- cookie
+- time
+- binary
 
 library:
   source-dirs: src
