@@ -8,7 +8,7 @@ module WebCore.Cookie
     , SetCookie
     , setCookie
     , setExpiredCookie
-    , setPath
+    , setCookiePath
     , lookup
     ) where
 
@@ -165,8 +165,8 @@ setMaxAge maybeMaxAge (SetCookie cookie) =
         }
 
 
-setPath :: Maybe BS.ByteString -> SetCookie -> SetCookie
-setPath maybePath (SetCookie cookie) =
+setCookiePath :: Maybe BS.ByteString -> SetCookie -> SetCookie
+setCookiePath maybePath (SetCookie cookie) =
     SetCookie $ cookie
         { WebCookie.setCookiePath = maybePath
         }
