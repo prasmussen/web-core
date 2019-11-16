@@ -35,6 +35,7 @@ dependencies:
 - binary
 - wai
 - warp
+- http-types
 
 library:
   source-dirs: src
