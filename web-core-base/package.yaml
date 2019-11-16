@@ -39,6 +39,7 @@ dependencies:
 - aeson
 - servant-server
 - stm
+- hailgun
 
 library:
   source-dirs: src
