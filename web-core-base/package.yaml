@@ -37,6 +37,7 @@ dependencies:
 - warp
 - http-types
 - aeson
+- servant-server
 
 library:
   source-dirs: src
