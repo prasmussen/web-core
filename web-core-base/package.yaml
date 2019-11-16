@@ -42,6 +42,9 @@ dependencies:
 - stm
 - hailgun
 - swagger2
+- servant-swagger
+- servant-swagger-ui
+- servant-swagger-ui-core
 - lens
 
 library:
