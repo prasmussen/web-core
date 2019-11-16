@@ -40,6 +40,8 @@ dependencies:
 - servant-server
 - stm
 - hailgun
+- swagger2
+- lens
 
 library:
   source-dirs: src
