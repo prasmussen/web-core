@@ -38,6 +38,7 @@ dependencies:
 - http-types
 - aeson
 - servant-server
+- stm
 
 library:
   source-dirs: src
