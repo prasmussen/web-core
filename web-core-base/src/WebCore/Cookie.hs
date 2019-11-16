@@ -35,6 +35,7 @@ data Config = Config
     { maxAge :: MaxAge
     , httpOnly :: HttpOnly
     , secure :: Secure
+    , sameSite :: SameSite
     }
     deriving (Show)
 
@@ -67,7 +68,25 @@ instance Read Secure where
 
 
 
+newtype SameSite = SameSite WebCookie.SameSiteOption
+    deriving (Show)
+
+
+instance Read SameSite where
+    readsPrec _ str =
+        case str of
+            "lax" ->
+                [(SameSite WebCookie.sameSiteLax, "")]
+
+            "strict" ->
+                [(SameSite WebCookie.sameSiteStrict, "")]
+
+            _ ->
+                []
+
+
 -- COOKIE
+
 
 newtype CookieJar = CookieJar WebCookie.Cookies
     deriving (Show, Eq, Ord, GHC.Generic)
@@ -130,10 +149,11 @@ setCookieFromConfig Config
     { maxAge = MaxAge maxAge
     , httpOnly = HttpOnly httpOnly
     , secure = Secure secure
+    , sameSite = SameSite sameSite
     } =
     SetCookie $ WebCookie.defaultSetCookie
         { WebCookie.setCookieDomain = Nothing
-        , WebCookie.setCookieSameSite = Just WebCookie.sameSiteLax
+        , WebCookie.setCookieSameSite = Just sameSite
         , WebCookie.setCookieMaxAge = Just maxAge
         , WebCookie.setCookieHttpOnly = httpOnly
         , WebCookie.setCookieSecure = secure
