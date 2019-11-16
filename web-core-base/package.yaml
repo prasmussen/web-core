@@ -33,6 +33,8 @@ dependencies:
 - cookie
 - time
 - binary
+- wai
+- warp
 
 library:
   source-dirs: src
