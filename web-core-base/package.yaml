@@ -46,6 +46,7 @@ dependencies:
 - servant-swagger-ui
 - servant-swagger-ui-core
 - lens
+- cryptonite
 
 library:
   source-dirs: src
