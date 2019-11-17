@@ -7,12 +7,9 @@ module WebCore.Password
     , Hash(..)
     , HashOptions(..)
     , HashError
-    , UnsafePlaintext
     , fromText
     , hash
     , isValid
-    , fromUnsafe
-    , toUnsafe
     ) where
 
 
@@ -129,22 +126,3 @@ isValid (Plaintext plaintext) (Hash text) =
 
         err ->
             Left err
-
-
-
--- UNSAFE PLAINTEXT
-
-
--- This type is unsafe because it has a ToJSON instance
-newtype UnsafePlaintext = UnsafePlaintext T.Text
-    deriving (GHC.Generic, Aeson.FromJSON, Aeson.ToJSON)
-
-
-fromUnsafe :: UnsafePlaintext -> Plaintext
-fromUnsafe (UnsafePlaintext password) =
-    Plaintext password
-
-
-toUnsafe :: Plaintext -> UnsafePlaintext
-toUnsafe (Plaintext password) =
-    UnsafePlaintext password
