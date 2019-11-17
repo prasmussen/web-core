@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 module WebCore.Squeal.Password
-    ( Hash
+    ( Hash(..)
     , hash
     , isValid
     , module Password
