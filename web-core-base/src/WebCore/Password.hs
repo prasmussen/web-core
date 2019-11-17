@@ -76,6 +76,7 @@ hashOptions HashOptions
         { Argon2.hashIterations = iterations
         , Argon2.hashMemory = memory
         , Argon2.hashParallelism = parallelism
+        , Argon2.hashVariant = Argon2.Argon2id
         }
 
 -- PLAINTEXT
