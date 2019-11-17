@@ -3,6 +3,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module WebCore.Squeal.Password
@@ -29,10 +30,12 @@ import qualified WebCore.Read as Read
 
 
 newtype Hash = Hash T.Text
-    deriving (Show, GHC.Generic)
+    deriving (Show, GHC.Generic, Eq)
 
 
-instance Aeson.ToJSON Hash
+instance Aeson.ToJSON Hash where
+    toJSON _ =
+        Aeson.String ""
 
 
 instance SOP.Generic Hash

@@ -96,7 +96,7 @@ fromText password =
 -- HASH
 
 newtype Hash = Hash T.Text
-    deriving (Show, GHC.Generic)
+    deriving (Show, GHC.Generic, Eq)
 
 instance Aeson.ToJSON Hash where
     toJSON _ =
