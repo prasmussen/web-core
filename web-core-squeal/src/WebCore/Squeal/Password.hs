@@ -28,7 +28,7 @@ import qualified WebCore.Read as Read
 
 
 
-newtype Hash = Hash Password.Hash
+newtype Hash = Hash T.Text
     deriving (Show, GHC.Generic)
 
 
@@ -42,23 +42,26 @@ type instance PG Hash = 'PGtext
 
 
 instance ToParam Hash 'PGtext where
-    toParam (Hash (Password.Hash text)) =
+    toParam (Hash text) =
         toParam text
 
 
 instance FromValue 'PGtext Hash where
     fromValue =
-        BinaryParser.parser (Hash . Password.Hash . TE.decodeUtf8)
+        BinaryParser.parser (Hash . TE.decodeUtf8)
 
 
 hash :: HashOptions -> Plaintext -> IO (Either HashError Hash)
 hash options plaintext = do
     eitherHash <- Password.hash options plaintext
-    eitherHash
-        & fmap Hash
-        & pure
+    case eitherHash of
+        Left err ->
+            pure $ Left err
+
+        Right (Password.Hash text) ->
+            pure $ Right (Hash text)
 
 
 isValid :: Plaintext -> Hash -> Either HashError Bool
-isValid plaintext (Hash h) =
-    Password.isValid plaintext h
+isValid plaintext (Hash text) =
+    Password.isValid plaintext (Password.Hash text)
