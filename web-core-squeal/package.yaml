@@ -27,6 +27,8 @@ dependencies:
 - bytestring
 - squeal-postgresql
 - unliftio
+- aeson
+- generics-sop
 
 library:
   source-dirs: src
