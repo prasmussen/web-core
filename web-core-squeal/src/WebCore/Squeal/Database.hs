@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module WebCore.Database
+module WebCore.Squeal.Database
     ( Config(..)
     , ConnectionPool
     , createPool
