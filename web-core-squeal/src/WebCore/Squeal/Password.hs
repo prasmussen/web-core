@@ -51,11 +51,14 @@ instance FromValue 'PGtext Hash where
         BinaryParser.parser (Hash . Password.Hash . TE.decodeUtf8)
 
 
-hash :: HashCost -> Plaintext -> IO Hash
-hash cost plaintext = do
-    Hash <$> Password.hash cost plaintext
+hash :: HashOptions -> Plaintext -> IO (Either HashError Hash)
+hash options plaintext = do
+    eitherHash <- Password.hash options plaintext
+    eitherHash
+        & fmap Hash
+        & pure
 
 
-isValid :: Plaintext -> Hash -> Bool
+isValid :: Plaintext -> Hash -> Either HashError Bool
 isValid plaintext (Hash h) =
     Password.isValid plaintext h

@@ -5,7 +5,8 @@
 module WebCore.Password
     ( Plaintext
     , Hash(..)
-    , HashCost
+    , HashOptions(..)
+    , HashError
     , UnsafePlaintext
     , fromText
     , hash
@@ -17,27 +18,65 @@ module WebCore.Password
 
 import Data.Function ((&))
 
-import qualified Crypto.KDF.BCrypt as Bcrypt
+import qualified Crypto.Argon2 as Argon2
+import qualified Crypto.Random as Random
 import qualified Data.Aeson as Aeson
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Short as ShortText
+import qualified Data.Word as Word
 import qualified GHC.Generics as GHC
 import qualified WebCore.Read as Read
 
 
+-- HASH OPTIONS
 
--- PASSWORD HASH COST
+
+data HashOptions = HashOptions
+    { hashIterations :: HashIterations
+    , hashMemory :: HashMemory
+    , hashParallelism :: HashParallelism
+    }
 
 
-newtype HashCost = HashCost Int
+newtype HashIterations = HashIterations Word.Word32
     deriving (Show)
 
 
-instance Read HashCost where
+instance Read HashIterations where
     readsPrec _ str =
-        Read.read HashCost str
+        Read.read HashIterations str
 
 
+newtype HashMemory = HashMemory Word.Word32
+    deriving (Show)
+
+
+instance Read HashMemory where
+    readsPrec _ str =
+        Read.read HashMemory str
+
+
+newtype HashParallelism = HashParallelism Word.Word32
+    deriving (Show)
+
+
+instance Read HashParallelism where
+    readsPrec _ str =
+        Read.read HashParallelism str
+
+
+hashOptions :: HashOptions -> Argon2.HashOptions
+hashOptions HashOptions
+    { hashIterations = HashIterations iterations
+    , hashMemory = HashMemory memory
+    , hashParallelism = HashParallelism parallelism
+    } =
+    Argon2.defaultHashOptions
+        { Argon2.hashIterations = iterations
+        , Argon2.hashMemory = memory
+        , Argon2.hashParallelism = parallelism
+        }
 
 -- PLAINTEXT
 
@@ -66,16 +105,29 @@ instance Aeson.ToJSON Hash where
         Aeson.String ""
 
 
-hash :: HashCost -> Plaintext -> IO Hash
-hash (HashCost cost) (Plaintext plaintext) = do
-    Bcrypt.hashPassword cost (TE.encodeUtf8 plaintext)
-        & fmap TE.decodeUtf8
+type HashError = Argon2.Argon2Status
+
+
+hash :: HashOptions -> Plaintext -> IO (Either HashError Hash)
+hash options (Plaintext plaintext) = do
+    salt <- Random.getRandomBytes 16
+    Argon2.hashEncoded (hashOptions options) (TE.encodeUtf8 plaintext) (salt)
+        & fmap ShortText.toText
         & fmap Hash
+        & pure
 
 
-isValid :: Plaintext -> Hash -> Bool
+isValid :: Plaintext -> Hash -> Either HashError Bool
 isValid (Plaintext plaintext) (Hash text) =
-    Bcrypt.validatePassword (TE.encodeUtf8 plaintext) (TE.encodeUtf8 text)
+    case Argon2.verifyEncoded (ShortText.fromText text) (TE.encodeUtf8 plaintext) of
+        Argon2.Argon2Ok ->
+            Right True
+
+        Argon2.Argon2VerifyMismatch ->
+            Right False
+
+        err ->
+            Left err
 
 
 

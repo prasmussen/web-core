@@ -47,6 +47,8 @@ dependencies:
 - servant-swagger-ui-core
 - lens
 - cryptonite
+- argon2
+- text-short
 
 library:
   source-dirs: src
