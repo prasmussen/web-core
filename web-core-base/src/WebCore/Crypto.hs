@@ -21,7 +21,6 @@ import qualified Web.ClientSession as CS
 
 
 newtype EncryptionKey = EncryptionKey (BS.ByteString, CS.Key)
-    deriving (Show)
 
 
 instance Read EncryptionKey where
@@ -58,7 +57,6 @@ keyFromText base64 = do
 -- CIPHERTEXT
 
 newtype Ciphertext = Ciphertext BS.ByteString
-    deriving (Show)
 
 
 toCiphertext :: BS.ByteString -> Ciphertext
