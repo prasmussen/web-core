@@ -8,6 +8,7 @@ module WebCore.Server
     , baseUrlText
     , staticFilePath
     , formatConfig
+    , environmentToText
     ) where
 
 
@@ -91,6 +92,7 @@ instance Read StaticPath where
 
 data Environment
     = Production
+    | Staging
     | Development
     deriving (Show)
 
@@ -101,12 +103,27 @@ instance Read Environment where
             "production" ->
                 [(Production, "")]
 
+            "staging" ->
+                [(Staging, "")]
+
             "development" ->
                 [(Development, "")]
 
             _ ->
                 []
 
+
+environmentToText :: Environment -> T.Text
+environmentToText environment =
+    case environment of
+        Production ->
+            "production"
+
+        Staging ->
+            "staging"
+
+        Development ->
+            "development"
 
 
 -- RUN SERVER
