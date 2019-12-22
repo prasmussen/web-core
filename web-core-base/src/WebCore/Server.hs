@@ -3,6 +3,7 @@
 
 module WebCore.Server
     ( Config(..)
+    , SystemdConfig(..)
     , Environment(..)
     , run
     , runSystemd
@@ -89,6 +90,16 @@ instance Read StaticPath where
         Read.readText StaticPath str
 
 
+
+data SystemdConfig = SystemdConfig
+    { enableSocketActivation :: Bool
+    , heartbeatInterval :: Maybe Int
+    , logInfo :: String -> IO ()
+    , logWarning :: String -> IO ()
+    }
+
+
+
 -- ENVIRONMENT
 
 
@@ -136,10 +147,9 @@ run config app =
     Warp.runSettings (warpSettings config) app
 
 
--- TODO: take SystemdConfig
-runSystemd :: Config -> Wai.Application -> IO ()
-runSystemd config app =
-    Systemd.runSystemdWarp systemdSettings (warpSettings config) app
+runSystemd :: Config -> SystemdConfig -> Wai.Application -> IO ()
+runSystemd config systemdConfig app =
+    Systemd.runSystemdWarp (systemdSettings systemdConfig) (warpSettings config) app
 
 
 warpSettings :: Config -> Warp.Settings
@@ -152,11 +162,13 @@ warpSettings Config
         & Warp.setPort port
 
 
-systemdSettings :: Systemd.SystemdSettings
-systemdSettings =
+systemdSettings :: SystemdConfig -> Systemd.SystemdSettings
+systemdSettings SystemdConfig{..} =
     Systemd.defaultSystemdSettings
-        & Systemd.setRequireSocketActivation True
-        & Systemd.setHeartbeatInterval (Just 5)
+        & Systemd.setRequireSocketActivation enableSocketActivation
+        & Systemd.setHeartbeatInterval heartbeatInterval
+        & Systemd.setLogWarn logWarning
+        & Systemd.setLogInfo logInfo
 
 
 -- CONFIG ACCESSOR FUNCTIONS
