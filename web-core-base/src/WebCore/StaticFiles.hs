@@ -94,7 +94,10 @@ hashFromFilePath :: FilePath -> Maybe BS.ByteString
 hashFromFilePath filePath = do
     nixPath <- BSU.fromString filePath
         & BS.stripPrefix "/nix/store/"
-    pure (BS.take 32 nixPath)
+    nixPath
+        & BS.take 32
+        & \hash -> "W/\"" <> hash <> "\""
+        & pure
 
 
 
