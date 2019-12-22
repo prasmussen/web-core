@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module WebCore.Middleware.NoCache
-    ( noCache
+    ( removeAll
+    , onlyEtag
     ) where
 
 import Data.Function ((&))
@@ -11,34 +12,44 @@ import qualified Network.HTTP.Types.Header as Header
 import qualified Network.Wai as Wai
 
 
+onlyEtag :: Wai.Application -> Wai.Application
+onlyEtag =
+    removeHeaders
+        [ "cache-control"
+        , "pragma"
+        , "expires"
+        , "last-modified"
+        ]
 
-noCache :: Wai.Application -> Wai.Application
-noCache app req respond = do
+
+removeAll :: Wai.Application -> Wai.Application
+removeAll =
+    removeHeaders
+        [ "cache-control"
+        , "pragma"
+        , "expires"
+        , "last-modified"
+        , "etag"
+        ]
+
+
+removeHeaders :: [Header.HeaderName] -> Wai.Application -> Wai.Application
+removeHeaders unwantedHeaders app req respond =
     app req $ \res -> do
-        Wai.mapResponseHeaders updateHeaders res
+        Wai.mapResponseHeaders (updateHeaders unwantedHeaders) res
             & respond
 
 
-updateHeaders :: [Header] -> [Header]
-updateHeaders headers =
+updateHeaders :: [Header.HeaderName] -> [Header] -> [Header]
+updateHeaders unwantedHeaders headers =
     headers
-        & filter (not . isCacheHeader)
+        & filter (not . (isUnwantedHeader unwantedHeaders))
         & (noCacheHeaders ++)
 
 
-isCacheHeader :: Header -> Bool
-isCacheHeader (name, _) =
-    any (== name) cacheHeaderNames
-
-
-cacheHeaderNames :: [Header.HeaderName]
-cacheHeaderNames =
-    [ "cache-control"
-    , "etag"
-    , "expires"
-    , "last-modified"
-    , "pragma"
-    ]
+isUnwantedHeader :: [Header.HeaderName] -> Header -> Bool
+isUnwantedHeader unwantedHeaders (name, _) =
+    any (== name) unwantedHeaders
 
 
 noCacheHeaders :: [Header]

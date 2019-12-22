@@ -49,6 +49,9 @@ dependencies:
 - cryptonite
 - argon2
 - text-short
+- filepath
+- directory
+- utf8-string
 
 library:
   source-dirs: src
