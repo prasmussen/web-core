@@ -29,13 +29,17 @@ import qualified WebCore.Server as Server
 
 
 type Api
-      = "static" :> Servant.Raw
+      =  "static" :> Servant.Raw
+    :<|> "favicon.ico" :> Servant.Raw
+    :<|> "robots.txt" :> Servant.Raw
     :<|> Servant.Raw
 
 
 server :: Server.Config -> Servant.Server Api
 server config
       =  staticFilesHandler config
+    :<|> fileHandler config "favicon.ico"
+    :<|> fileHandler config "robots.txt"
     :<|> indexHandler config
 
 
@@ -45,6 +49,15 @@ staticFilesHandler config =
     Servant.serveDirectoryWith $
         (Static.defaultWebAppSettings undefined)
             { Static.ssLookupFile = lookupFile (Server.staticFilePath config </> "static")
+            , Static.ssMaxAge = Static.NoMaxAge
+            }
+
+
+fileHandler :: Server.Config -> FilePath -> ServerT Raw m
+fileHandler config filePath =
+    Servant.serveDirectoryWith $
+        (Static.defaultWebAppSettings undefined)
+            { Static.ssLookupFile = lookupFile (Server.staticFilePath config </> filePath)
             , Static.ssMaxAge = Static.NoMaxAge
             }
 
