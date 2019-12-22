@@ -5,6 +5,7 @@ module WebCore.Server
     ( Config(..)
     , Environment(..)
     , run
+    , runSystemd
     , baseUrlText
     , staticFilePath
     , formatConfig
@@ -19,6 +20,7 @@ import qualified Data.String as String
 import qualified Data.Text as T
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
+import qualified Network.Wai.Handler.Warp.Systemd as Systemd
 import qualified WebCore.Read as Read
 
 
@@ -130,15 +132,31 @@ environmentToText environment =
 
 
 run :: Config -> Wai.Application -> IO ()
-run Config
+run config app =
+    Warp.runSettings (warpSettings config) app
+
+
+-- TODO: take SystemdConfig
+runSystemd :: Config -> Wai.Application -> IO ()
+runSystemd config app =
+    Systemd.runSystemdWarp systemdSettings (warpSettings config) app
+
+
+warpSettings :: Config -> Warp.Settings
+warpSettings Config
     { listenHost = ListenHost host
     , listenPort = ListenPort port
-    } app =
+    } =
     Warp.defaultSettings
         & Warp.setHost host
         & Warp.setPort port
-        & \settings -> Warp.runSettings settings app
 
+
+systemdSettings :: Systemd.SystemdSettings
+systemdSettings =
+    Systemd.defaultSystemdSettings
+        & Systemd.setRequireSocketActivation True
+        & Systemd.setHeartbeatInterval (Just 5)
 
 
 -- CONFIG ACCESSOR FUNCTIONS

@@ -52,6 +52,7 @@ dependencies:
 - filepath
 - directory
 - utf8-string
+- warp-systemd
 
 library:
   source-dirs: src
