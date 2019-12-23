@@ -4,6 +4,7 @@ module WebCore.Environment
     , ParseError(..)
     , Environment.getEnvironment
     , lookup
+    , lookupMaybe
     ) where
 
 
@@ -43,3 +44,9 @@ lookup environment key =
 
         Nothing ->
             Left (KeyNotFound key)
+
+
+lookupMaybe :: Read a => Environment -> String -> Maybe a
+lookupMaybe environment key = do
+    value <- Prelude.lookup key environment
+    Safe.readMay value
