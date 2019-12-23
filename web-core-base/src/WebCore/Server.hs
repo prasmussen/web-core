@@ -4,7 +4,7 @@
 module WebCore.Server
     ( Config(..)
     , SystemdConfig(..)
-    , SystemdLoggers(..)
+    , SystemdHooks(..)
     , Environment(..)
     , ListenType(..)
     , run
@@ -140,9 +140,10 @@ data SystemdConfig = SystemdConfig
     deriving (Show)
 
 
-data SystemdLoggers = SystemdLoggers
+data SystemdHooks = SystemdHooks
     { logWarning :: String -> IO ()
     , logInfo :: String -> IO ()
+    , onShutdown :: IO ()
     }
 
 
@@ -217,14 +218,14 @@ run config app =
     Warp.runSettings (warpSettings config) app
 
 
-runSystemd :: Config -> SystemdConfig -> SystemdLoggers -> Wai.Application -> IO ()
-runSystemd config systemdConfig loggers app =
+runSystemd :: Config -> SystemdConfig -> SystemdHooks -> Wai.Application -> IO ()
+runSystemd config systemdConfig hooks app =
     case listenType config of
         ListenTcp ->
             run config app
 
         ListenSocketActivation ->
-            Systemd.runSystemdWarp (systemdSettings systemdConfig loggers) (warpSettings config) app
+            Systemd.runSystemdWarp (systemdSettings systemdConfig hooks) (warpSettings config) app
 
 
 warpSettings :: Config -> Warp.Settings
@@ -237,16 +238,17 @@ warpSettings Config
         & Warp.setPort port
 
 
-systemdSettings :: SystemdConfig -> SystemdLoggers -> Systemd.SystemdSettings
+systemdSettings :: SystemdConfig -> SystemdHooks -> Systemd.SystemdSettings
 systemdSettings SystemdConfig
     { enableSocketActivation = EnableSocketActivation enableSocketActivation
     , ..
-    } SystemdLoggers{..} =
+    } SystemdHooks{..} =
     Systemd.defaultSystemdSettings
         & Systemd.setRequireSocketActivation enableSocketActivation
         & Systemd.setHeartbeatInterval (heartbeatIntervalInt <$> heartbeatInterval)
         & Systemd.setLogWarn logWarning
         & Systemd.setLogInfo logInfo
+        & Systemd.setOnBeginShutdown onShutdown
 
 
 -- CONFIG ACCESSOR FUNCTIONS
