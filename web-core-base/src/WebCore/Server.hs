@@ -4,6 +4,7 @@
 module WebCore.Server
     ( Config(..)
     , SystemdConfig(..)
+    , SystemdLoggers(..)
     , Environment(..)
     , run
     , runSystemd
@@ -90,13 +91,43 @@ instance Read StaticPath where
         Read.readText StaticPath str
 
 
+-- SYSTEMD CONFIG
+
 
 data SystemdConfig = SystemdConfig
-    { enableSocketActivation :: Bool
-    , heartbeatInterval :: Maybe Int
-    , logInfo :: String -> IO ()
-    , logWarning :: String -> IO ()
+    { enableSocketActivation :: EnableSocketActivation
+    , heartbeatInterval :: Maybe HeartbeatInterval
     }
+    deriving (Show)
+
+
+data SystemdLoggers = SystemdLoggers
+    { logWarning :: String -> IO ()
+    , logInfo :: String -> IO ()
+    }
+
+
+newtype EnableSocketActivation = EnableSocketActivation Bool
+    deriving (Show)
+
+
+instance Read EnableSocketActivation where
+    readsPrec _ str =
+        Read.readBool EnableSocketActivation str
+
+
+newtype HeartbeatInterval = HeartbeatInterval Int
+    deriving (Show)
+
+
+instance Read HeartbeatInterval where
+    readsPrec _ str =
+        Read.read HeartbeatInterval str
+
+
+
+heartbeatIntervalInt :: HeartbeatInterval -> Int
+heartbeatIntervalInt (HeartbeatInterval n) = n
 
 
 
@@ -147,9 +178,9 @@ run config app =
     Warp.runSettings (warpSettings config) app
 
 
-runSystemd :: Config -> SystemdConfig -> Wai.Application -> IO ()
-runSystemd config systemdConfig app =
-    Systemd.runSystemdWarp (systemdSettings systemdConfig) (warpSettings config) app
+runSystemd :: Config -> SystemdConfig -> SystemdLoggers -> Wai.Application -> IO ()
+runSystemd config systemdConfig loggers app =
+    Systemd.runSystemdWarp (systemdSettings systemdConfig loggers) (warpSettings config) app
 
 
 warpSettings :: Config -> Warp.Settings
@@ -162,11 +193,14 @@ warpSettings Config
         & Warp.setPort port
 
 
-systemdSettings :: SystemdConfig -> Systemd.SystemdSettings
-systemdSettings SystemdConfig{..} =
+systemdSettings :: SystemdConfig -> SystemdLoggers -> Systemd.SystemdSettings
+systemdSettings SystemdConfig
+    { enableSocketActivation = EnableSocketActivation enableSocketActivation
+    , ..
+    } SystemdLoggers{..} =
     Systemd.defaultSystemdSettings
         & Systemd.setRequireSocketActivation enableSocketActivation
-        & Systemd.setHeartbeatInterval heartbeatInterval
+        & Systemd.setHeartbeatInterval (heartbeatIntervalInt <$> heartbeatInterval)
         & Systemd.setLogWarn logWarning
         & Systemd.setLogInfo logInfo
 
