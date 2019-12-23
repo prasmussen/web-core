@@ -6,6 +6,7 @@ module WebCore.Server
     , SystemdConfig(..)
     , SystemdLoggers(..)
     , Environment(..)
+    , ListenType(..)
     , run
     , runSystemd
     , baseUrlText
@@ -34,6 +35,7 @@ data Config = Config
     { environment :: Environment
     , listenPort :: ListenPort
     , listenHost :: ListenHost
+    , listenType :: ListenType
     , baseUrl :: BaseUrl
     , staticPath :: StaticPath
     }
@@ -44,19 +46,34 @@ formatConfig :: Config -> T.Text
 formatConfig Config
     { listenHost = ListenHost listenHost
     , listenPort = ListenPort listenPort
+    , listenType = listenType
     , staticPath = StaticPath staticPath
     , baseUrl = BaseUrl baseUrl
     , environment = environment
     } =
-    [ ("ListenHost", T.pack $ show listenHost)
-    , ("ListenPort", T.pack $ show listenPort)
-    , ("Environment", T.pack $ show environment)
-    , ("BaseUrl", baseUrl)
-    , ("StaticPath", staticPath)
-    ]
-    & map Bifoldable.biList
-    & map (T.intercalate ": ")
-    & T.intercalate "\n"
+    let
+        options =
+            case listenType of
+                ListenTcp ->
+                    [ ("ListenHost", T.pack $ show listenHost)
+                    , ("ListenPort", T.pack $ show listenPort)
+                    , ("ListenType", T.pack $ show listenType)
+                    , ("Environment", T.pack $ show environment)
+                    , ("BaseUrl", baseUrl)
+                    , ("StaticPath", staticPath)
+                    ]
+
+                ListenSocketActivation ->
+                    [ ("ListenType", T.pack $ show listenType)
+                    , ("Environment", T.pack $ show environment)
+                    , ("BaseUrl", baseUrl)
+                    , ("StaticPath", staticPath)
+                    ]
+    in
+    options
+        & map Bifoldable.biList
+        & map (T.intercalate ": ")
+        & T.intercalate "\n"
 
 
 newtype ListenPort = ListenPort Int
@@ -89,6 +106,28 @@ newtype StaticPath = StaticPath T.Text
 instance Read StaticPath where
     readsPrec _ str =
         Read.readText StaticPath str
+
+
+-- LISTEN TYPE
+
+
+data ListenType
+    = ListenTcp
+    | ListenSocketActivation
+    deriving (Show)
+
+
+instance Read ListenType where
+    readsPrec _ str =
+        case str of
+            "tcp" ->
+                [(ListenTcp, "")]
+
+            "socket-activation" ->
+                [(ListenSocketActivation, "")]
+
+            _ ->
+                []
 
 
 -- SYSTEMD CONFIG
@@ -180,7 +219,12 @@ run config app =
 
 runSystemd :: Config -> SystemdConfig -> SystemdLoggers -> Wai.Application -> IO ()
 runSystemd config systemdConfig loggers app =
-    Systemd.runSystemdWarp (systemdSettings systemdConfig loggers) (warpSettings config) app
+    case listenType config of
+        ListenTcp ->
+            run config app
+
+        ListenSocketActivation ->
+            Systemd.runSystemdWarp (systemdSettings systemdConfig loggers) (warpSettings config) app
 
 
 warpSettings :: Config -> Warp.Settings
