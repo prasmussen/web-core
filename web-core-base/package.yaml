@@ -54,6 +54,7 @@ dependencies:
 - warp-systemd
 - http-client
 - http-client-tls
+- email-validate
 
 library:
   source-dirs: src

@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -23,6 +25,7 @@ import qualified Data.Text.Encoding as TE
 import qualified GHC.Generics as GHC
 import qualified Network.HTTP.Client as Client
 import qualified Network.HTTP.Client.TLS as TLS
+import qualified WebCore.EmailAddress as EmailAddress
 import qualified WebCore.Read as Read
 
 
@@ -72,26 +75,24 @@ instance Read ApiKey where
         Read.readText ApiKey str
 
 
-
 -- SENDER
 
 
-newtype Sender = Sender T.Text
+newtype Sender = Sender EmailAddress.EmailAddress
     deriving (Show)
+    deriving newtype (Read, Aeson.ToJSON)
 
 
-instance Read Sender where
-    readsPrec _ str =
-        Read.readText Sender str
-
+senderEmail :: Sender -> EmailAddress.EmailAddress
+senderEmail (Sender email) = email
 
 
 -- MESSAGE
 
 
 data Message = Message
-    { from :: T.Text
-    , to :: T.Text
+    { from :: Sender
+    , to :: EmailAddress.EmailAddress
     , subject :: T.Text
     , text :: T.Text
     }
@@ -103,8 +104,8 @@ instance Aeson.ToJSON Message
 
 formatMessage :: Message -> T.Text
 formatMessage Message{..} =
-    [ ("FROM", from)
-    , ("TO", to)
+    [ ("FROM", EmailAddress.toText $ senderEmail from)
+    , ("TO", EmailAddress.toText to)
     , ("SUBJECT", subject)
     , ("CONTENT", text)
     ]
@@ -129,8 +130,8 @@ prepareRequest config Message{..} =
         & Client.setRequestCheckStatus
         & Client.applyBasicAuth "api" (apiKeyBS config)
         & Client.urlEncodedBody
-            [ ("from", TE.encodeUtf8 from)
-            , ("to", TE.encodeUtf8 to)
+            [ ("from", EmailAddress.toByteString $ senderEmail from)
+            , ("to", EmailAddress.toByteString to)
             , ("subject", TE.encodeUtf8 subject)
             , ("text", TE.encodeUtf8 text)
             ]
