@@ -40,7 +40,6 @@ dependencies:
 - aeson
 - servant-server
 - stm
-- hailgun
 - swagger2
 - servant-swagger
 - servant-swagger-ui
@@ -53,6 +52,8 @@ dependencies:
 - directory
 - utf8-string
 - warp-systemd
+- http-client
+- http-client-tls
 
 library:
   source-dirs: src
