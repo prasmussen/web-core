@@ -13,6 +13,7 @@ import qualified Data.Aeson as Aeson
 import qualified Data.Binary.Builder as Builder
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as Encoding
 import qualified Network.HTTP.Types.Header as Header
 import qualified Network.HTTP.Types.Status as Status
@@ -42,14 +43,31 @@ prepareHeaders headers =
     ("Content-Type", "application/json") : headers
 
 
+data ResponseBody = ResponseBody
+    { bodyError :: T.Text
+    , bodyStatus :: Int
+    , bodyField :: Maybe T.Text
+    }
+
+
+instance Aeson.ToJSON ResponseBody where
+    toJSON (ResponseBody {..}) = Aeson.object
+        [ "error" .= bodyError
+        , "status" .= bodyStatus
+        , "field" .= bodyField
+        ]
+
+
 prepareBody :: Status.Status -> BS.ByteString -> Builder.Builder
 prepareBody status body =
-    [ "error" .= Aeson.String (Encoding.decodeUtf8 body)
-    , "status" .= Aeson.Number (fromIntegral $ Status.statusCode status)
-    ]
-    & Aeson.object
-    & Aeson.encode
-    & Builder.fromLazyByteString
+    ResponseBody
+        { bodyError = Encoding.decodeUtf8 body
+        , bodyStatus = Status.statusCode status
+        , bodyField = Nothing
+        }
+        & processAesonError
+        & Aeson.encode
+        & Builder.fromLazyByteString
 
 
 data ResponseData = ResponseData
@@ -90,3 +108,55 @@ currentBody res =
 
         (Wai.Internal.ResponseStream _ _ _) ->
             Nothing
+
+
+
+-- AESON ERROR
+
+
+processAesonError :: ResponseBody -> ResponseBody
+processAesonError body@ResponseBody{..} =
+    if T.isPrefixOf "Error in $" bodyError then
+        body
+            { bodyError = dropAesonErrorPrefix bodyError
+            , bodyField = Just (takeAesonJsonPath bodyError)
+            }
+
+    else
+        body
+
+
+dropAesonErrorPrefix :: T.Text -> T.Text
+dropAesonErrorPrefix bytestring =
+    bytestring
+        & T.dropWhile (not . isColon)
+        & T.drop 2
+        & capitalize
+
+
+takeAesonJsonPath :: T.Text -> T.Text
+takeAesonJsonPath bytestring =
+    bytestring
+        & T.dropWhile (not . isDollar)
+        & T.takeWhile (not . isColon)
+
+
+isColon :: Char -> Bool
+isColon char =
+    char == ':'
+
+
+isDollar :: Char -> Bool
+isDollar char =
+    char == '$'
+
+
+
+-- TEXT HELPERS
+
+
+capitalize :: T.Text -> T.Text
+capitalize text =
+    case T.splitAt 1 text of
+        (first, rest) ->
+            T.toUpper first <> rest
