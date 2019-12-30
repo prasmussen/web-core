@@ -10,6 +10,7 @@ module WebCore.Password
     , fromText
     , hash
     , isValid
+    , minLength
     ) where
 
 
@@ -80,16 +81,33 @@ hashOptions HashOptions
 
 
 newtype Plaintext = Plaintext T.Text
-    deriving (Eq, GHC.Generic, Aeson.FromJSON)
+    deriving (Eq, GHC.Generic)
 
+
+instance Aeson.FromJSON Plaintext where
+    parseJSON = Aeson.withText "Plaintext" $ \text ->
+        case fromText text of
+            Just plaintext ->
+                pure plaintext
+
+            Nothing ->
+                fail $ "Password is too short, minimum length is " <> show minLength
 
 instance Show Plaintext where
     show (Plaintext _) = "<REDACTED>"
 
 
-fromText :: T.Text -> Plaintext
+minLength :: Int
+minLength = 8
+
+
+fromText :: T.Text -> Maybe Plaintext
 fromText password =
-    Plaintext password
+    if T.length password < minLength then
+        Nothing
+
+    else
+        Just (Plaintext password)
 
 
 
