@@ -46,7 +46,7 @@ prepareHeaders headers =
 data ResponseBody = ResponseBody
     { bodyError :: T.Text
     , bodyStatus :: Int
-    , bodyField :: Maybe T.Text
+    , bodyField :: T.Text
     }
 
 
@@ -63,7 +63,7 @@ prepareBody status body =
     ResponseBody
         { bodyError = Encoding.decodeUtf8 body
         , bodyStatus = Status.statusCode status
-        , bodyField = Nothing
+        , bodyField = ""
         }
         & processAesonError
         & Aeson.encode
@@ -119,7 +119,7 @@ processAesonError body@ResponseBody{..} =
     if T.isPrefixOf "Error in $" bodyError then
         body
             { bodyError = dropAesonErrorPrefix bodyError
-            , bodyField = Just (takeAesonJsonPath bodyError)
+            , bodyField = takeAesonJsonPath bodyError
             }
 
     else
