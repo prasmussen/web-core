@@ -42,8 +42,8 @@ instance Aeson.ToJSON EmailAddress where
 instance Aeson.FromJSON EmailAddress where
     parseJSON = Aeson.withText "EmailAddress" $ \text ->
         case fromText text of
-            Left err ->
-                fail $ "Failed to parse email address: " <> err
+            Left _ ->
+                fail "Invalid email address"
 
             Right email ->
                 pure email
